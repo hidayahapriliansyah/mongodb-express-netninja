@@ -1,4 +1,5 @@
 const express = require('express');
+const { ObjectId } = require('mongodb');
 const { connectToDb, getDb } = require('./db');
 
 // init and middleware
@@ -25,9 +26,31 @@ app.get('/books', (req, res) => {
     .sort({ author: 1 })
     .forEach((book) => books.push(book))
     .then(() => {
-      res.status(200).json(books);
+      res.status(200).json({
+        status: 'succes',
+        books: books,
+      });
     })
     .catch((err) => {
       res.status(500).json({ error: err });
     });
+});
+
+app.get('/books/:id', (req, res) => {
+  if (ObjectId.isValid(req.params.id)) {
+    db.collection('books')
+      .findOne({ _id: ObjectId(req.params.id) })
+      .then((doc) => {
+        if (!doc) {
+          res.status(400).json({ error: 'Could find document. Bad request.' });
+          return;
+        }
+        res.status(200).json(doc);
+      })
+      .catch((err) => {
+        res.status(500).json({ error: 'Could not find the document' });
+      })
+  } else {
+    res.status(500).json({ error: 'Not valid id' });
+  }
 });
