@@ -24,9 +24,14 @@ connectToDb((err) => {
 app.get('/books', (req, res) => {
   let books = [];
 
+  const page = req.query.p === '0' ? 1 : req.query.p || 1;
+  const booksPerPage = 3;
+
   db.collection('books')
     .find() // find itu mereturn cursor, 
     .sort({ author: 1 })
+    .skip((page - 1) * booksPerPage)
+    .limit(booksPerPage)
     .forEach((book) => books.push(book))
     .then(() => {
       res.status(200).json({
