@@ -5,9 +5,12 @@ const { connectToDb, getDb } = require('./db');
 // init and middleware
 const app = express();
 
-let db; 
+app.use(express.json());
+
 
 // dbconnection 
+let db; 
+
 connectToDb((err) => {
   if (!err) {
     app.listen(3000, () => {
@@ -53,4 +56,17 @@ app.get('/books/:id', (req, res) => {
   } else {
     res.status(500).json({ error: 'Not valid id' });
   }
+});
+
+app.post('/books', (req, res) => {
+  const book = req.body;
+
+  db.collection('books')
+    .insertOne(book)
+    .then((result) => {
+      res.status(200).json(result);
+    })
+    .catch((err) => {
+      res.status(500).json({ error: 'Could not insert book'});
+    });
 });
